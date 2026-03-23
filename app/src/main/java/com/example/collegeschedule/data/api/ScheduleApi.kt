@@ -11,4 +11,12 @@ interface ScheduleApi {
         @Query("start") start: String,
         @Query("end") end: String
     ): List<ScheduleByDateDto>
+
+    @GET("api/schedule/groups")
+    suspend fun getAllGroups(): List<String>
+
+    @GET("api/schedule/groups/search")
+    suspend fun searchGroups(
+        @Query("query") query: String
+    ): List<String>
 }
