@@ -9,20 +9,32 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.collegeschedule.data.dto.ScheduleByDateDto
 import com.example.collegeschedule.data.network.RetrofitInstance
+import com.example.collegeschedule.data.repository.FavoritesRepository
 import com.example.collegeschedule.data.repository.ScheduleRepository
 import com.example.collegeschedule.ui.components.GroupSearch
+import com.example.collegeschedule.ui.favorites.FavoritesViewModel
+import com.example.collegeschedule.ui.favorites.FavoritesViewModelFactory
 import kotlinx.coroutines.launch
 
 @Composable
 fun ScheduleScreen(
     initialGroup: String = "ИС-12",
-    onGroupChange: ((String) -> Unit)? = null
+    onGroupChange: ((String) -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val repository = remember { ScheduleRepository(RetrofitInstance.api) }
+    val favoritesRepository = remember { FavoritesRepository(context) }
+
+    val favoritesViewModel: FavoritesViewModel = viewModel(
+        factory = FavoritesViewModelFactory(favoritesRepository, repository)
+    )
 
     var selectedGroup by remember { mutableStateOf(initialGroup) }
     var schedule by remember { mutableStateOf<List<ScheduleByDateDto>>(emptyList()) }
@@ -48,14 +60,15 @@ fun ScheduleScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         GroupSearch(
             selectedGroup = selectedGroup,
             onGroupSelected = { group ->
                 selectedGroup = group
                 onGroupChange?.invoke(group)
-            }
+            },
+            favoritesViewModel = favoritesViewModel
         )
 
         when {
